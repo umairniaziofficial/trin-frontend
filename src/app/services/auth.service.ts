@@ -85,4 +85,15 @@ export class AuthService {
     sessionStorage.removeItem('adminToken');
     sessionStorage.removeItem('adminUser');
   }
+
+  isAdminLoggedIn(): boolean {
+    return !!(localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken'));
+  }
+
+  adminLogout(): void {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    sessionStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminUser');
+  }
 }

@@ -37,26 +37,43 @@ export class DashboardLoginComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.loginForm.invalid) return;
     this.isLoading = true;
-    this.error = '';
+    this.error = null;
 
     const loginData = {
       ...this.loginForm.value,
-      isAdminPanel: true  // Add this flag for admin panel
+      isAdminPanel: true
     };
 
     this.authService.signin(loginData).subscribe({
       next: (response) => {
-        this.isLoading = false;
-        if (response.role === 'admin') {
-          this.router.navigate(['/dashboard']);
-        } else {
+        if (response.role !== 'admin') {
           this.error = 'Access denied. Admin only.';
+          this.isLoading = false;
+          return;
         }
+
+        // Store token based on remember me preference
+        if (this.loginForm.value.rememberMe) {
+          localStorage.setItem('adminToken', response.token);
+        } else {
+          sessionStorage.setItem('adminToken', response.token);
+        }
+
+        // Store user data
+        localStorage.setItem('adminUser', JSON.stringify({
+          id: response._id,
+          email: response.email,
+          role: response.role
+        }));
+
+        this.isLoading = false;
+        this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         this.isLoading = false;
-        this.error = error.error.message || 'An error occurred. Please try again.';
+        this.error = error.error?.message || 'An error occurred. Please try again.';
       }
     });
   }
